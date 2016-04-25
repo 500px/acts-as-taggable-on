@@ -31,18 +31,10 @@ module ActsAsTaggableOn
     end
 
     def self.named_any(list)
-      if ActsAsTaggableOn.strict_case_match
-        clause = list.map { |tag|
-          sanitize_sql(["name = #{binary}?", as_8bit_ascii(tag)])
-        }.join(" OR ")
-        where(clause)
-      else
-        clause = list.map { |tag|
-          lowercase_ascii_tag = as_8bit_ascii(tag).downcase
-          sanitize_sql(["lower(name) = ?", lowercase_ascii_tag])
-        }.join(" OR ")
-        where(clause)
-      end
+      clause = list.map { |tag|
+        sanitize_sql_for_named_any(tag).force_encoding('BINARY')
+      }.join(' OR ')
+      where(clause)
     end
 
     def self.named_like(name)
@@ -116,6 +108,14 @@ module ActsAsTaggableOn
           string.to_s.dup.force_encoding('BINARY')
         else
           string.to_s.mb_chars
+        end
+      end
+
+      def sanitize_sql_for_named_any(tag)
+        if ActsAsTaggableOn.strict_case_match
+          sanitize_sql(["name = #{binary}?", as_8bit_ascii(tag)])
+        else
+          sanitize_sql(['LOWER(name) = LOWER(?)', as_8bit_ascii(unicode_downcase(tag))])
         end
       end
     end
