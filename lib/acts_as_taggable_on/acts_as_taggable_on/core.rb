@@ -6,7 +6,7 @@ module ActsAsTaggableOn::Taggable
 
       base.class_eval do
         attr_writer :custom_contexts
-        after_save :save_tags, if: :tag_list_changed?
+        after_save :save_tags
       end
 
       base.initialize_acts_as_taggable_on_core

@@ -5,7 +5,7 @@ module ActsAsTaggableOn::Taggable
       base.extend ActsAsTaggableOn::Taggable::Ownership::ClassMethods
 
       base.class_eval do
-        after_save :save_owned_tags, if: :tag_list_changed?
+        after_save :save_owned_tags
       end
 
       base.initialize_acts_as_taggable_on_ownership
