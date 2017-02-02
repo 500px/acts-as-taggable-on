@@ -4,6 +4,16 @@ Each change should fall into categories that would affect whether the release is
 
 As such, a _Feature_ would map to either major or minor. A _bug fix_ to a patch.  And _misc_ is either minor or patch, the difference being kind of fuzzy for the purposes of history.  Adding tests would be patch level.
 
+### [3.5.1 / 2017-02-02]
+
+* Breaking Changes
+  * Perform tag operations within their own transaction.
+    * Attempts to reduce lock wait time for other tables.
+    * WARNING This has the effect that the following sequence is separated into three transactions, breaking atomicity: `photo.save; payment.save`. The photo will be saved in one transaction, then the tags will be updated in another, then the payment will be updated in a third.
+* Fixes
+  * Only proceed with save process if the tag list is dirty.
+    * Intended to avoid needless reads to check the existence of tag rows when no changes have been made.
+
 ### Master [changes](https://github.com/mbleigh/acts-as-taggable-on/compare/v3.0.2...master)
 
 * Breaking Changes
