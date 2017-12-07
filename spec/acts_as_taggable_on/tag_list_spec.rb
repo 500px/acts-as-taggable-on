@@ -83,6 +83,18 @@ describe ActsAsTaggableOn::TagList do
       new_tag_list = tag_list.concat(another_tag_list)
       expect(new_tag_list.class).to eq(ActsAsTaggableOn::TagList)
     end
+
+    context 'without duplicates' do
+      let(:arr) { ['crazy', 'alien'] }
+      let(:another_tag_list) { ActsAsTaggableOn::TagList.new(*arr) }
+      it 'adds other list' do
+        expect(tag_list.concat(another_tag_list)).to eq(%w[awesome radical crazy alien])
+      end
+
+      it 'adds other array' do
+        expect(tag_list.concat(arr)).to eq(%w[awesome radical crazy alien])
+      end
+    end
   end
 
   describe '#to_s' do
@@ -92,7 +104,7 @@ describe ActsAsTaggableOn::TagList do
 
     it 'should be able to call to_s on a frozen tag list' do
       tag_list.freeze
-      expect(-> { tag_list.add('cool', 'rad,bodacious') }).to raise_error
+      expect(-> { tag_list.add('cool', 'rad,bodacious') }).to raise_error(RuntimeError)
       expect(-> { tag_list.to_s }).to_not raise_error
     end
   end
@@ -113,6 +125,20 @@ describe ActsAsTaggableOn::TagList do
       expect(tag_list.to_s).to eq('awesome, radical, entrée')
 
       ActsAsTaggableOn.force_lowercase = false
+    end
+
+    it 'should ignore case when removing duplicates if strict_case_match is false' do
+      tag_list = ActsAsTaggableOn::TagList.new('Junglist', 'JUNGLIST', 'Junglist', 'Massive', 'MASSIVE', 'MASSIVE')
+
+      expect(tag_list.to_s).to eq('Junglist, Massive')
+    end
+
+    it 'should not ignore case when removing duplicates if strict_case_match is true' do
+      ActsAsTaggableOn.strict_case_match = true
+      tag_list = ActsAsTaggableOn::TagList.new('Junglist', 'JUNGLIST', 'Junglist', 'Massive', 'MASSIVE', 'MASSIVE')
+
+      expect(tag_list.to_s).to eq('Junglist, JUNGLIST, Massive, MASSIVE')
+      ActsAsTaggableOn.strict_case_match = false
     end
   end
 
